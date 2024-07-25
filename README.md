@@ -46,8 +46,8 @@ This project consists of two running services on a Linux server. The nest_bot is
 
 1. **Clone the repository:**
     ```bash
-    git clone https://github.com/MadeByAdem/nest-thermostat-monitoring-and-control-bot
-    cd nest-thermostat-monitoring-and-control-bot
+    git clone https://github.com/MadeByAdem/Nest-Monitoring-bot
+    cd Nest-Monitoring-bot
     ```
 
 2. **Create a virtual environment for the nest_bot:**
