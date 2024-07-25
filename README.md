@@ -48,7 +48,7 @@ This project consists of two running services on a Linux server. The nest_bot is
 
 1. **Clone the repository:**
     ```bash
-    git clone https://github.com/MadeByAdem/Nest-Monitoring-bot
+    git clone https://github.com/MadeByAdem/Nest-API-Monitoring-bot
     cd Nest-Monitoring-bot
     ```
 
