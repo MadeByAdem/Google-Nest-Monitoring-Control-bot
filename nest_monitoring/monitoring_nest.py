@@ -12,7 +12,9 @@ import time
 import schedule
 from dotenv import load_dotenv
 
-load_dotenv()
+# ENV VARIABLES
+# Load environment variables from .env
+load_dotenv(dotenv_path='../.env')
 
 weather_key = os.environ.get("WEATHER_API_KEY")
 weather_location = os.environ.get("WEATHER_LOCATION_CODE")
