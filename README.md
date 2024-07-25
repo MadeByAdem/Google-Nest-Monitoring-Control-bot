@@ -12,6 +12,8 @@ This project consists of two running services on a Linux server. The nest_bot is
 - Control your Nest Thermostat from your Telegram account (like setting temperature, mode, etc.).
 - Get values from your Nest Thermostat or previous values through your Telegram account.
 
+<center><img src="./example.png" alt="Example Telegram Nest Bot" width="300px"></center>
+
 ## Table of contents
 1. [Introduction](#google-nest-thermostat-monitoring-and-control-telegram-bot)
 2. [Features](#features)
