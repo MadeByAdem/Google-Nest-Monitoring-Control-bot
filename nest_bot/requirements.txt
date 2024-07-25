@@ -1,0 +1,5 @@
+python-dotenv
+telebot
+schedule
+pandas
+openpyxl

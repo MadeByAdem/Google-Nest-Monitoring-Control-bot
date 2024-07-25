@@ -1,0 +1,2 @@
+menu - Show the menu
+start - Start the bot

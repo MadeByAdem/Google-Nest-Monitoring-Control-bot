@@ -1,0 +1,11 @@
+[Unit]
+Description=Nest Bot
+
+[Service]
+ExecStart=/your/path/to/nest_bot/venv/bin/python /your/path/to/nest_bot/nest_bot.py
+WorkingDirectory=/your/path/to/nest_bot
+Restart=always
+User=root
+
+[Install]
+WantedBy=default.target

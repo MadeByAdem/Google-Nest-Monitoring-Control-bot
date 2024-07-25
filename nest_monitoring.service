@@ -1,0 +1,11 @@
+[Unit]
+Description=Nest Monitoring
+
+[Service]
+ExecStart=/your/path/to/nest_monitoring/venv/bin/python /your/path/to/nest_monitoring/monitoring_nest.py
+WorkingDirectory=/your/path/to/nest_monitoring
+Restart=always
+User=root
+
+[Install]
+WantedBy=default.target
