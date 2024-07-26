@@ -158,7 +158,7 @@ The number of times a higher or equal outside temperature was {num_of_higher_tem
 
 This means that it was <b>{hours_higher_temp_outside} hours</b> with a higher or equal outside temperature than {temperature} degrees Celsius between {start_date} and {end_date}.
 
-<i>Note: errors or none values are not counted.</i>
+<i>Note: Every value represents a half hour. Therefore, the total number of value is devided by 2. Errors or none values are not counted.</i>
 """
     logging.debug("Analyze_data function ended.")
 
