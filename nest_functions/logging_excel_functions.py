@@ -1,5 +1,5 @@
 import pandas as pd
-import datetime
+from datetime import datetime, timedelta
 import os
 import logging
 import os
@@ -61,3 +61,80 @@ def log_stat(temperature, humidity, outside_temp, outside_humidity, temperature_
 
     logging.info(f"Data has been saved to the Excel file on {current_date} at {current_time}.")
     logging.debug("Log_stat function ended.")
+
+# ---------- ANALYZE DATA ---------- #
+def analyze_data(start_date, end_date, temperature):
+    logging.debug("Analyze_data function started.")
+
+    # Check if temperature is a valid number
+    try:
+        # if temperature has a , replace it with a .
+        if "," in temperature:
+            temperature = temperature.replace(",", ".")
+        # convert temperature to float
+        temperature = float(temperature)
+    except ValueError:
+        error = "Invalid temperature format. Please use a number."
+        logging.error(error)
+        logging.debug("Analyze_data function ended.")
+        return error
+
+    # Specify the Excel file directory
+    excel_directory = os.environ.get('EXCEL_DIRECTORY')
+
+    if not excel_directory:
+        error = "Environment variable 'EXCEL_DIRECTORY' is not set."
+        logging.error(error)
+        logging.debug("Analyze_data function ended.")
+        return error
+
+    # Convert start_date and end_date to datetime objects
+    try:
+        start_date_dt = datetime.strptime(start_date, "%d-%m-%Y")
+        end_date_dt = datetime.strptime(end_date, "%d-%m-%Y")
+    except ValueError as e:
+        error = f"Invalid date format: {e}"
+        logging.error(error)
+        logging.debug("Analyze_data function ended.")
+        return error
+
+    # Collect all files within the date range
+    current_date = start_date_dt
+    files_to_analyze = []
+
+    while current_date <= end_date_dt:
+        file_name = f"nest-data_{current_date.strftime('%d-%m-%Y')}.xlsx"
+        file_path = os.path.join(excel_directory, file_name)
+        if os.path.exists(file_path):
+            files_to_analyze.append(file_path)
+        else:
+            logging.warning(f"File {file_path} does not exist.")
+        current_date += timedelta(days=1)
+
+    if not files_to_analyze:
+        error = "No files found within the specified date range."
+        logging.error(error)
+        logging.debug("Analyze_data function ended.")
+        return error
+
+    logging.debug(f"Files to analyze: {files_to_analyze}")
+
+    num_of_higher_temp = 0
+
+    for file in files_to_analyze:
+        df = pd.read_excel(file)
+        # Read the file line by line
+        for index, row in df.iterrows():
+            if row["Temperature"] > temperature:
+                num_of_higher_temp += 1
+    
+    hours_higher_temp = num_of_higher_temp / 2  # 2 registrations per hour
+
+    message = f"""
+The number of times a higher temperature was found between {start_date} and {end_date} was {num_of_higher_temp}.
+
+This means that it was {hours_higher_temp} hours with a higher temperature than {temperature} degrees Celsius between {start_date} and {end_date}.
+"""
+    logging.debug("Analyze_data function ended.")
+
+    return message

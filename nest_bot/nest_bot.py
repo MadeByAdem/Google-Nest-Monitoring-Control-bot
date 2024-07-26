@@ -13,6 +13,7 @@ import pandas as pd
 from nest_functions import weather_functions
 from nest_functions import nest_functions
 from nest_functions import telegram_functions
+from nest_functions import logging_excel_functions
 import json
 
 # ENV VARIABLES
@@ -102,12 +103,13 @@ def send_handle_menu(message):
     button4 = telebot.types.KeyboardButton('📅 Values of a specific day')
     button5 = telebot.types.KeyboardButton('📈 Peak values of today')
     button6 = telebot.types.KeyboardButton('📈 Peak values of a specific day')
-    button7 = telebot.types.KeyboardButton('🌡 Set temperature')
-    button8 = telebot.types.KeyboardButton('📄 Current thermostat status')
-    button9 = telebot.types.KeyboardButton('🍃 Toggle eco mode')
-    button10 = telebot.types.KeyboardButton('🔥 Toggle heating')
+    button7 = telebot.types.KeyboardButton('🧮 Analyze temperature')
+    button8 = telebot.types.KeyboardButton('🌡 Set temperature')
+    button9 = telebot.types.KeyboardButton('📄 Current thermostat status')
+    button10 = telebot.types.KeyboardButton('🍃 Toggle eco mode')
+    button11 = telebot.types.KeyboardButton('🔥 Toggle heating')
     
-    markup_menu.add(button1, button2, button3, button4, button5, button6, button7, button8, button9, button10)
+    markup_menu.add(button1, button2, button3, button4, button5, button6, button7, button8, button9, button10, button11)
     
     option_selection_text = 'What do you want to do?'
     
@@ -267,7 +269,6 @@ def handle_command_topvalues_day(message):
 
     logging.info(f"User is asked for input: From which date do you want the values? (format dd-mm-yyyy)")
     logging.debug(f"Handle_topvalues_day function ended.")
-    logging.debug(f"Handle_topvalues_day_input function started.")
     
     bot.register_next_step_handler(message, handle_topvalues_day_input)
 
@@ -336,6 +337,63 @@ def get_top_values(date):
 
     except FileNotFoundError:
         return "No data found."
+
+# Analyze temperature
+@bot.message_handler(func=lambda message: message.chat.id in AUTHORIZED_USERS and message.text == "🧮 Analyze temperature")
+def handle_command_analyze_temperature(message):
+    logging.debug(f"Handle analyze temperature function started.")
+    bot.send_message(message.chat.id, "What is the start date of the analysis? (format dd-mm-yyyy)")
+    bot.register_next_step_handler(message, handle_startdate_analysis_input)
+
+def handle_startdate_analysis_input(message):
+    logging.debug(f"Handle_startdate_analysis_input function started.")
+    if message.text and message.text.strip():
+        try:
+            start_date = message.text
+            bot.send_message(message.chat.id, "What is the end date of the analysis? (format dd-mm-yyyy)")
+            bot.register_next_step_handler(message, handle_enddate_analysis_input, start_date)
+        except ValueError:
+            bot.reply_to(message, "Invalid date format. Please use the format dd-mm-yyyy.")
+            logging.info(f"Invalid date format. Please use the format dd-mm-yyyy.")
+    else:
+        bot.reply_to(message, "Please provide a valid date. Format: dd-mm-yyyy.")
+        logging.info("Please provide a valid date.")
+    logging.debug(f"Handle_startdate_analysis_input function ended.")
+
+def handle_enddate_analysis_input(message, start_date):
+    logging.debug(f"Handle_enddate_analysis_input function started.")
+    if message.text and message.text.strip():
+        try:
+            end_date = message.text
+            bot.send_message(message.chat.id, "Which temperature threshold do you want to use? (eg. 26.5)")
+            bot.register_next_step_handler(message, handle_temperature_analysis_input, start_date, end_date)
+        except ValueError:
+            bot.reply_to(message, "Invalid date format. Please use the format dd-mm-yyyy.")
+            logging.info(f"Invalid date format. Please use the format dd-mm-yyyy.")
+    else:
+        bot.reply_to(message, "Please provide a valid date. Format: dd-mm-yyyy.")
+        logging.info("Please provide a valid date.")
+    logging.debug(f"Handle_enddate_analysis_input function ended.")
+
+
+def handle_temperature_analysis_input(message, start_date, end_date):
+    logging.debug(f"Handle_temperature_analysis_input function started.")
+    if message.text and message.text.strip():
+        try:
+            temperature = message.text
+            response_message = logging_excel_functions.analyze_data(start_date, end_date, temperature)
+            # Send the response message to the user
+            bot.send_message(message.chat.id, response_message)
+        except ValueError:
+            bot.reply_to(message, "Invalid temperature format. Please use a number.")
+            logging.info(f"Invalid temperature format. Please use a number.")
+    else:
+        bot.reply_to(message, "Please provide a valid numeric temperature. eg. 26.5.")
+        logging.info("Please provide a valid numeric temperature. eg. 26.5.")
+    logging.debug(f"Handle_temperature_analysis_input function ended.")
+
+    send_handle_menu(message)
+
 
 # Set Temperature
 @bot.message_handler(func=lambda message: message.chat.id in AUTHORIZED_USERS and message.text == '🌡 Set temperature')

@@ -4,6 +4,8 @@ This is a Google Nest Thermostat Monitoring and Control Telegram Bot. The main p
 
 This project consists of two running services on a Linux server. The nest_bot is responsible for the user interaction with the bot. The nest_monitoring is responsile for collecting Google Nest credentials, the monitoring and logging of values into Excel files.
 
+The idea for this project arose from a dispute with my landlord regarding the renovation and insulation of my apartment. Under Dutch law, if your home exceeds 26.5 degrees Celsius for more than 300 hours a year, the landlord is obligated to take measures to reduce the temperature. Therefore, I developed this project to enable residents to monitor and document the temperature throughout the year.
+
 ## Features
 - Monitor inside temperatures and humidity every 30 minutes.
 - Log values in an Excel file (separate file for each day).
@@ -11,6 +13,7 @@ This project consists of two running services on a Linux server. The nest_bot is
 - Send notifications to your Telegram account.
 - Control your Nest Thermostat from your Telegram account (like setting temperature, mode, etc.).
 - Get values from your Nest Thermostat or previous values through your Telegram account.
+- Analyze the temperature of your Nest Thermostat over a longer period of time (based on the generated Excel files).
 
 <center><img src="./example.png" alt="Example Telegram Nest Bot" width="300px"></center>
 
