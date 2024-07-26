@@ -318,18 +318,18 @@ def get_top_values(date):
         
         # Construct the message to send back
         response_message = (
-            f"📈 Peak values for {date}:\n\n"
-            f"Temperature inside:\n"
+            f"📈 <b>Peak values for {date}:</b>\n\n"
+            f"<b>Temperature inside:</b>\n"
             f" - Highest: {highest_temp}°C\n"
             f" - Lowest: {lowest_temp}°C\n\n"
-            f"Humidity inside:\n"
+            f"<b>Humidity inside:</b>\n"
             f" - Highest: {highest_humidity}%\n"
             f" - Lowest: {lowest_humidity}%\n\n"
 
-            f"Temperature outside:\n"
+            f"<b>Temperature outside:</b>\n"
             f" - Highest: {highest_temp_outside}°C\n"
             f" - Lowest: {lowest_temp_outside}°C\n\n"
-            f"Humidity outside:\n"
+            f"<b>Humidity outside:</b>\n"
             f" - Highest: {highest_humidity_outside}%\n"
             f" - Lowest: {lowest_humidity_outside}%"
         )
