@@ -119,22 +119,53 @@ def analyze_data(start_date, end_date, temperature):
 
     logging.debug(f"Files to analyze: {files_to_analyze}")
 
-    num_of_higher_temp = 0
+    # Inside temperature
+    num_of_higher_temp_inside = 0
+    num_of_higher_temp_outside = 0
 
     for file in files_to_analyze:
         df = pd.read_excel(file)
         # Read the file line by line
         for index, row in df.iterrows():
-            if row["Temperature"] > temperature:
-                num_of_higher_temp += 1
-    
-    hours_higher_temp = num_of_higher_temp / 2  # 2 registrations per hour
+            temp_inside = row["Temperature"]
+            temp_outside = row["Outside temperature"]
+            
+            if isinstance(temp_inside, str):
+                temp_inside = try_convert_to_float(temp_inside)
+            if isinstance(temp_outside, str):
+                temp_outside = try_convert_to_float(temp_outside)
+            
+            if temp_inside is not None and temp_inside >= temperature:
+                num_of_higher_temp_inside += 1
+            if temp_outside is not None and temp_outside >= temperature:
+                num_of_higher_temp_outside += 1
 
-    message = f"""
-The number of times a higher temperature was found between {start_date} and {end_date} was {num_of_higher_temp}.
+    hours_higher_temp_inside = num_of_higher_temp_inside / 2  # 2 registrations per hour
+    hours_higher_temp_outside = num_of_higher_temp_outside / 2
 
-This means that it was {hours_higher_temp} hours with a higher temperature than {temperature} degrees Celsius between {start_date} and {end_date}.
+    message = f"""<b>Selected date range:</b> from <i>{start_date}</i> to <i>{end_date}</i>
+<b>Selected threshold:</b> <i>{temperature}</i> degrees Celsius
+
+<b><u>Results:</u></b>
+
+<b>Inside:</b>
+The number of times a higher or equal inside temperature was found was {num_of_higher_temp_inside}.
+
+This means that it was <b>{hours_higher_temp_inside} hours</b> with a higher or equal inside temperature than {temperature} degrees Celsius between {start_date} and {end_date}.
+
+<b>Outside:</b>
+The number of times a higher or equal outside temperature was {num_of_higher_temp_outside}.
+
+This means that it was <b>{hours_higher_temp_outside} hours</b> with a higher or equal outside temperature than {temperature} degrees Celsius between {start_date} and {end_date}.
+
+<i>Note: errors or none values are not counted.</i>
 """
     logging.debug("Analyze_data function ended.")
 
     return message
+
+def try_convert_to_float(value):
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return None

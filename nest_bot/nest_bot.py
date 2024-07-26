@@ -381,6 +381,7 @@ def handle_temperature_analysis_input(message, start_date, end_date):
     if message.text and message.text.strip():
         try:
             temperature = message.text
+            bot.send_message(message.chat.id, "Calculating... please wait...")
             response_message = logging_excel_functions.analyze_data(start_date, end_date, temperature)
             # Send the response message to the user
             bot.send_message(message.chat.id, response_message)
