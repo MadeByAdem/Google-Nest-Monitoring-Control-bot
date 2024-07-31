@@ -22,7 +22,7 @@ def log_stat(temperature, humidity, outside_temp, outside_humidity, temperature_
     os.makedirs(excel_directory, exist_ok=True)
 
     # Get current date and time
-    current_datetime = datetime.datetime.now()
+    current_datetime = datetime.now()
     current_date = current_datetime.strftime('%d-%m-%Y')
     current_time = current_datetime.strftime('%H:%M:%S')
     current_date_formatted = f"{current_date} {current_time}"
