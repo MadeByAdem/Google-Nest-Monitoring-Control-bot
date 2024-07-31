@@ -21,7 +21,7 @@ access_token = None
 refresh_token = None
 last_refresh_time = None
 
-log_directory = os.environ.get('LOG_DIRECTORY')
+log_directory = f".{os.environ.get('LOG_DIRECTORY')}"
 log_file_path = os.path.join(log_directory, os.environ.get('LOG_FILE_NAME'))
 
 def authenticate():
