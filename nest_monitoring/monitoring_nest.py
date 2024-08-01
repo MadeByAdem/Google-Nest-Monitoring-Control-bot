@@ -22,7 +22,7 @@ weather_location = os.environ.get("WEATHER_LOCATION_CODE")
 second_try = False
 
 # LOGGING
-log_directory = f".{os.environ.get('LOG_DIRECTORY')}"
+log_directory = os.environ.get('LOG_DIRECTORY')
 log_file_path = os.path.join(log_directory, os.environ.get('LOG_FILE_NAME'))
 
 # Ensure the log directory exists

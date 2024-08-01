@@ -21,7 +21,8 @@ access_token = None
 refresh_token = None
 last_refresh_time = None
 
-log_directory = f".{os.environ.get('LOG_DIRECTORY')}"
+# LOGGING
+log_directory = os.environ.get('LOG_DIRECTORY')
 log_file_path = os.path.join(log_directory, os.environ.get('LOG_FILE_NAME'))
 
 def authenticate():
@@ -182,7 +183,7 @@ def get_latest_bearer():
     global log_directory
 
     # Extract bearer token from the current log file
-    bearer_token = extract_bearer_from_file(log_file_path, pattern)
+    bearer_token = extract_bearer_from_file(f"{log_file_path}", pattern)
     
     # If token is not found, try the log file of the day before
     if not bearer_token or bearer_token == None or bearer_token == 'None':
@@ -222,8 +223,14 @@ def get_current_nest_values(bearer_token):
         'Authorization': bearer_token,
     }
 
-    response = requests.get(nest_api_url, headers=headers)
-    response_json = response.json()
+    try: 
+        response = requests.get(nest_api_url, headers=headers)
+        response_json = response.json()
+    except Exception as e:
+        logging.error(f"Error: {e}")
+        logging.error("Bearer token: " + bearer_token)
+        return
+    
 
     humidity = response_json['traits']['sdm.devices.traits.Humidity']['ambientHumidityPercent']
     temperature = float(response_json['traits']['sdm.devices.traits.Temperature']['ambientTemperatureCelsius'])

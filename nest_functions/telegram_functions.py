@@ -156,9 +156,7 @@ def send_message_to_server_bot(message):
     server_bot.send_message(CHAT_ID_PERON1, message)
 
     log_directory = os.environ.get('LOG_DIRECTORY')
-    log_file_name = os.environ.get('LOG_FILE_NAME')
-    
-    log_file = f'../{log_directory}/{log_file_name}'
+    log_file = os.path.join(log_directory, os.environ.get('LOG_FILE_NAME'))
     
     # Convert log file to text file
     text_file = log_file.replace('.log', '.txt')
