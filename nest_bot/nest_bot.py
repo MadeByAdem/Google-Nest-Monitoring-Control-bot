@@ -1,5 +1,7 @@
 import sys
-sys.path.append('/your/path/to/nest_bot_and_monitoring_directory/')  # Make sure this line is before the imports
+# sys.path.append('/your/path/to/nest_bot_and_monitoring_directory/')  # Make sure this line is before the imports
+sys.path.append('/home/adem/telegrambots/nest_bot/')  # Make sure this line is before the imports
+
 
 import datetime
 from datetime import datetime
@@ -125,34 +127,38 @@ def handle_command_now(message):
     bearer_token = nest_functions.get_latest_bearer()
     humidity, temperature, current_mode, eco_mode, temperature_set_point = nest_functions.get_current_nest_values(bearer_token)
     
-    # Save the values
-    nest_functions.save_values(humidity, temperature, current_mode, eco_mode, temperature_set_point)
-    
-    # Register the current modes in the global variables
-    current_mode = current_mode
-    eco_mode = eco_mode
-    
-    outside_temp, outside_humidity = weather_functions.get_outside_values(weather_key, weather_location)
-    
-    if outside_temp == "Error":
-        outside_temp = last_outside_temp
+    if humidity == False or temperature == False or current_mode == False or eco_mode == False or temperature_set_point == False:
+        telegram_functions.send_telegram_message(f"Error: Some data is not available. Please wait for a while and try again. \n\nHumidity: {humidity} \nTemperature: {temperature} \nCurrent mode: {current_mode} \nEco mode: {eco_mode} \nTemperature set point: {temperature_set_point}")
+        send_handle_menu(message)
+    else:
+        # Save the values
+        nest_functions.save_values(humidity, temperature, current_mode, eco_mode, temperature_set_point)
         
-    if outside_humidity == "Error":
-        outside_humidity = last_outside_humidity
+        # Register the current modes in the global variables
+        current_mode = current_mode
+        eco_mode = eco_mode
         
+        outside_temp, outside_humidity = weather_functions.get_outside_values(weather_key, weather_location)
+        
+        if outside_temp == "Error":
+            outside_temp = last_outside_temp
+            
+        if outside_humidity == "Error":
+            outside_humidity = last_outside_humidity
+            
 
-    output = telegram_functions.create_telegram_message(temperature, humidity, outside_temp, outside_humidity, temperature_set_point, "manual")
+        output = telegram_functions.create_telegram_message(temperature, humidity, outside_temp, outside_humidity, temperature_set_point, "manual")
 
-    bot.reply_to(message, output)
+        bot.reply_to(message, output)
 
-    logging.info(f"Message:"
-                 f"{output}")
-    logging.debug(f"Handle_now function ended.")  
-    
-    last_outside_humidity = outside_humidity
-    last_outside_temp = outside_temp
-    
-    send_handle_menu(message)
+        logging.info(f"Message:"
+                    f"{output}")
+        logging.debug(f"Handle_now function ended.")  
+        
+        last_outside_humidity = outside_humidity
+        last_outside_temp = outside_temp
+        
+        send_handle_menu(message)
 
 # Current values to all authorized users
 @bot.message_handler(func=lambda message: message.chat.id in AUTHORIZED_USERS and message.text == "📢 Values to all users")
@@ -161,22 +167,26 @@ def handle_command_now_to_all(message):
     global weather_key, weather_location, current_mode, eco_mode
 
     bearer_token = nest_functions.get_latest_bearer()
-    humidity, temperature, current_mode, eco_mode, temperature_set_point = nest_functions.get_current_nest_values(bearer_token)  
-    nest_functions.save_values(humidity, temperature, current_mode, eco_mode, temperature_set_point)  
+    humidity, temperature, current_mode, eco_mode, temperature_set_point = nest_functions.get_current_nest_values(bearer_token) 
     
-    outside_temp, outside_humidity = weather_functions.get_outside_values(weather_key, weather_location)
+    if humidity == False or temperature == False or current_mode == False or eco_mode == False or temperature_set_point == False:
+        telegram_functions.send_telegram_message(f"Error: Some data is not available. Please wait for a while and try again. \n\nHumidity: {humidity} \nTemperature: {temperature} \nCurrent mode: {current_mode} \nEco mode: {eco_mode} \nTemperature set point: {temperature_set_point}")
+        send_handle_menu(message)
+    else:
+        nest_functions.save_values(humidity, temperature, current_mode, eco_mode, temperature_set_point)  
+        
+        outside_temp, outside_humidity = weather_functions.get_outside_values(weather_key, weather_location)
 
-    output = telegram_functions.create_telegram_message(temperature, humidity, outside_temp, outside_humidity, temperature_set_point, "manual - to all")
+        output = telegram_functions.create_telegram_message(temperature, humidity, outside_temp, outside_humidity, temperature_set_point, "manual - to all")
 
-    for users in AUTHORIZED_USERS:
-        bot.send_message(users, output)
+        for users in AUTHORIZED_USERS:
+            bot.send_message(users, output)
 
-    logging.info(f"Message:"
-                 f"{output}")
-    logging.debug(f"Handle_now_to_all function ended.")   
-    
-    
-    send_handle_menu(message) 
+        logging.info(f"Message:"
+                    f"{output}")
+        logging.debug(f"Handle_now_to_all function ended.")   
+        
+        send_handle_menu(message) 
 
 # Today's values   
 @bot.message_handler(func=lambda message: message.chat.id in AUTHORIZED_USERS and message.text == "📆 Values of today")
@@ -403,22 +413,27 @@ def handle_command_set_temperature(message):
 
     bearer_token = nest_functions.get_latest_bearer()
     humidity, temperature, current_mode, eco_mode, temperature_set_point = nest_functions.get_current_nest_values(bearer_token)
-        
-    if current_mode == 'OFF':
-        logging.error("Current mode is OFF. Cannot set temperature.")
-        bot.reply_to(message, "The temperature can only be set if the thermostat is in 'heating' mode.")
-    elif eco_mode == "MANUAL_ECO":
-        logging.error("Eco mode is MANUAL_ECO. Cannot set temperature.")
-        bot.reply_to(message, "The temperature can not be set in the 'eco' mode. Turn of the eco mode first.")
+    
+    if current_mode == False or eco_mode == False or temperature_set_point == False:
+        logging.error("Some data is not available. Please wait for a while and try again.")
+        bot.reply_to(message, "Some data is not available. Please wait for a while and try again.")
+        send_handle_menu(message)
     else:
-        # Code to execute when set temperature command is sent
-        bot.send_message(message.chat.id, "What temperature do you want to set? (in degrees Celsius, e.g. 22.0)")
+        if current_mode == 'OFF':
+            logging.error("Current mode is OFF. Cannot set temperature.")
+            bot.reply_to(message, "The temperature can only be set if the thermostat is in 'heating' mode.")
+        elif eco_mode == "MANUAL_ECO":
+            logging.error("Eco mode is MANUAL_ECO. Cannot set temperature.")
+            bot.reply_to(message, "The temperature can not be set in the 'eco' mode. Turn of the eco mode first.")
+        else:
+            # Code to execute when set temperature command is sent
+            bot.send_message(message.chat.id, "What temperature do you want to set? (in degrees Celsius, e.g. 22.0)")
 
-        logging.info(f"User is asked for input: What temperature do you want to set? (in degrees Celsius, e.g. 22.0)")
-        logging.debug(f"Handle_set temperatuur function ended.")
-        logging.debug(f"Handle_temperature_input function started.")
-        
-        bot.register_next_step_handler(message, lambda message: handle_temperature_input(message, temperature_set_point))
+            logging.info(f"User is asked for input: What temperature do you want to set? (in degrees Celsius, e.g. 22.0)")
+            logging.debug(f"Handle_set temperatuur function ended.")
+            logging.debug(f"Handle_temperature_input function started.")
+            
+            bot.register_next_step_handler(message, lambda message: handle_temperature_input(message, temperature_set_point))
 
 def handle_temperature_input(message, temperature_set_point):
     global temperature_to_set
@@ -432,7 +447,9 @@ def handle_temperature_input(message, temperature_set_point):
                 handle_confirmation(message, temperature)
             else:    
                 set_temperature_result = nest_functions.set_temperature(bearer_token, temperature)
-                if set_temperature_result:
+                
+                
+                if set_temperature_result == "True":
                     bot.reply_to(message, "Temperature set to " + str(temperature) + " degrees Celsius.")
                     logging.info(f"Temperature set to {temperature}.")
                 else:
@@ -465,7 +482,7 @@ def handle_confirmation_yes(message):
 
     bearer_token = nest_functions.get_latest_bearer()
     set_temperature_result = nest_functions.set_temperature(bearer_token, temperature_to_set)
-    if set_temperature_result:
+    if set_temperature_result == "True":
         bot.reply_to(message, "Temperature set to " + str(temperature_to_set) + " degrees Celsius.")
         logging.info(f"Temperature set to {temperature_to_set}.")
     else:
@@ -490,18 +507,24 @@ def handle_current_state(message):
 
     bearer_token = nest_functions.get_latest_bearer()
     humidity, temperature, current_mode, eco_mode, temperature_set_point = nest_functions.get_current_nest_values(bearer_token)
-    current_state = f"""Current thermostat status:
-- Current temperature: {temperature}
-- Current humidity: {humidity}
-- Temperature set to: {temperature_set_point}
-- Current mode: {current_mode}
-- Eco mode: {eco_mode}
-    """
     
-    bot.reply_to(message, current_state)
-    logging.debug(f"Handle_current_state function ended.")
-    
-    send_handle_menu(message)
+    if humidity == False or temperature == False or current_mode == False or eco_mode == False or temperature_set_point == False:
+        logging.error("Some data is not available. Please wait for a while and try again.")
+        bot.reply_to(message, "Some data is not available. Please wait for a while and try again.")
+        send_handle_menu(message)
+    else:
+        current_state = f"""Current thermostat status:
+    - Current temperature: {temperature}
+    - Current humidity: {humidity}
+    - Temperature set to: {temperature_set_point}
+    - Current mode: {current_mode}
+    - Eco mode: {eco_mode}
+        """
+        
+        bot.reply_to(message, current_state)
+        logging.debug(f"Handle_current_state function ended.")
+        
+        send_handle_menu(message)
 
 # Set eco mode
 @bot.message_handler(func=lambda message: message.chat.id in AUTHORIZED_USERS and message.text == '🍃 Toggle eco mode')
@@ -511,23 +534,28 @@ def handle_command_set_eco_mode(message):
     bearer_token = nest_functions.get_latest_bearer()
     humidity, temperature, current_mode, eco_mode, temperature_set_point = nest_functions.get_current_nest_values(bearer_token)
     
-    # Code to execute when eco command is sent
-    if eco_mode == "OFF":
-        changed_mode = "MANUAL_ECO"
-        result = nest_functions.set_eco_mode(bearer_token, changed_mode)
-    elif eco_mode == "MANUAL_ECO":
-        changed_mode = "OFF"
-        result = nest_functions.set_eco_mode(bearer_token, changed_mode)
-
-    if result:
-        bot.reply_to(message, "Eco mode is set to: " + str(changed_mode) + ".")
-        logging.info(f"Eco mode set to {changed_mode}.")
+    if eco_mode == False:
+        logging.error("Eco mode is not available. Please wait for a while and try again.")
+        bot.reply_to(message, "Eco mode is not available. Please wait for a while and try again.")
+        send_handle_menu(message)
     else:
-        bot.reply_to(message, "An error occurred while setting the eco mode.")
-        # Send the response json
-        bot.reply_to(message, json.dumps(result, indent=4))
-        logging.info("An error occurred while setting the eco mode.")
-    send_handle_menu(message)
+        # Code to execute when eco command is sent
+        if eco_mode == "OFF":
+            changed_mode = "MANUAL_ECO"
+            result = nest_functions.set_eco_mode(bearer_token, changed_mode)
+        elif eco_mode == "MANUAL_ECO":
+            changed_mode = "OFF"
+            result = nest_functions.set_eco_mode(bearer_token, changed_mode)
+
+        if result:
+            bot.reply_to(message, "Eco mode is set to: " + str(changed_mode) + ".")
+            logging.info(f"Eco mode set to {changed_mode}.")
+        else:
+            bot.reply_to(message, "An error occurred while setting the eco mode.")
+            # Send the response json
+            bot.reply_to(message, json.dumps(result, indent=4))
+            logging.info("An error occurred while setting the eco mode.")
+        send_handle_menu(message)
 
 
 # Set heat mode
@@ -538,23 +566,28 @@ def handle_command_set_heat_mode(message):
     bearer_token = nest_functions.get_latest_bearer()
     humidity, temperature, current_mode, eco_mode, temperature_set_point = nest_functions.get_current_nest_values(bearer_token)
     
-    # Code to execute when eco command is sent
-    if current_mode == "OFF":
-        changed_mode = "HEAT"
-        result = nest_functions.set_heat_mode(bearer_token, changed_mode)
-    elif current_mode == "HEAT":
-        changed_mode = "OFF"
-        result = nest_functions.set_heat_mode(bearer_token, changed_mode)
-
-    if result:
-        bot.reply_to(message, "Heat mode set to: " + str(changed_mode) + ".")
-        logging.info(f"Heat mode set to {changed_mode}.")
+    if current_mode == False:
+        logging.error("Current mode is not available. Please wait for a while and try again.")
+        bot.reply_to(message, "Current mode is not available. Please wait for a while and try again.")
+        send_handle_menu(message)
     else:
-        bot.reply_to(message, "An error occurred while setting the heat mode.")
-        # Send the response json
-        bot.reply_to(message, json.dumps(result, indent=4))
-        logging.info("An error occurred while setting the heat mode.")
-    send_handle_menu(message)
+        # Code to execute when eco command is sent
+        if current_mode == "OFF":
+            changed_mode = "HEAT"
+            result = nest_functions.set_heat_mode(bearer_token, changed_mode)
+        elif current_mode == "HEAT":
+            changed_mode = "OFF"
+            result = nest_functions.set_heat_mode(bearer_token, changed_mode)
+
+        if result:
+            bot.reply_to(message, "Heat mode set to: " + str(changed_mode) + ".")
+            logging.info(f"Heat mode set to {changed_mode}.")
+        else:
+            bot.reply_to(message, "An error occurred while setting the heat mode.")
+            # Send the response json
+            bot.reply_to(message, json.dumps(result, indent=4))
+            logging.info("An error occurred while setting the heat mode.")
+        send_handle_menu(message)
 
 # All other messages
 @bot.message_handler(func=lambda message: True)
@@ -565,10 +598,16 @@ def handle_all_other_messages(message):
     bearer_token = nest_functions.get_latest_bearer()
     
     humidity, temperature, current_mode, eco_mode, temperature_set_point = nest_functions.get_current_nest_values(bearer_token)
-    # Code to handle all other messages
-    handle_temperature_input(message, temperature_set_point)
     
-    logging.debug(f"Handle_all_other_messages function ended.")
+    if temperature_set_point == False:
+        logging.error("Temperature set point is not available. Please wait for a while and try again.")
+        bot.reply_to(message, "Temperature set point is not available. Please wait for a while and try again.")
+        send_handle_menu(message)
+    else:
+        # Code to handle all other messages
+        handle_temperature_input(message, temperature_set_point)
+        
+        logging.debug(f"Handle_all_other_messages function ended.")
  
 # Polling
 print("Bot running...")

@@ -7,6 +7,7 @@ import os
 import requests
 import re
 import json
+from nest_functions import telegram_functions
 
 load_dotenv()
 
@@ -231,6 +232,9 @@ def get_current_nest_values(bearer_token):
         logging.error("Bearer token: " + bearer_token)
         return
     
+    if response_json.get('error'):
+        telegram_functions.send_telegram_message(response_json['error']['message'])
+        return False, False, False, False, False
 
     humidity = response_json['traits']['sdm.devices.traits.Humidity']['ambientHumidityPercent']
     temperature = float(response_json['traits']['sdm.devices.traits.Temperature']['ambientTemperatureCelsius'])
@@ -276,7 +280,7 @@ def set_temperature(bearer_token, temperature_to_set):
         logging.info(f"Set temperature: {temperature_to_set}")
         logging.debug("Response: " + str(response))
         logging.debug("Set_temperature function is ended.")
-        return True
+        return "True"
     else:
         logging.error(f"Set temperature: {temperature_to_set}")
         logging.error("Response: " + str(response))
