@@ -1,7 +1,5 @@
 import sys
-# sys.path.append('/your/path/to/nest_bot_and_monitoring_directory/')  # Make sure this line is before the imports
-sys.path.append('/home/adem/telegrambots/nest_bot/')  # Make sure this line is before the imports
-
+sys.path.append('/your/path/to/nest_bot_and_monitoring_directory/')  # Make sure this line is before the imports
 
 import datetime
 from datetime import datetime
